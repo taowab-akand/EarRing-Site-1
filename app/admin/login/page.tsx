@@ -1,10 +1,12 @@
 import { login } from "../actions";
+import {authMessages, type AuthStage} from '@/lib/auth-errors';
 export default async function Login({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; reference?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, reference } = await searchParams;
+  const message = error && Object.hasOwn(authMessages,error) ? authMessages[error as AuthStage] : error ? 'Sign in failed. Please try again.' : '';
   return (
     <main className="login">
       <a className="brand" href="/">
@@ -28,7 +30,8 @@ export default async function Login({
         </label>
         {error && (
           <p className="error" role="alert">
-            {error}
+            {message}
+            {reference && /^[a-f0-9-]{36}$/.test(reference) && <small>Diagnostic reference: {reference}</small>}
           </p>
         )}
         <button className="primary">Sign in</button>

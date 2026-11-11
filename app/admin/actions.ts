@@ -3,19 +3,31 @@ import { db, configured, requireAdmin } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { AdminAccessError, authenticationStage, diagnostic, type AuthStage } from '@/lib/auth-errors';
 export async function login(form: FormData) {
-  if (!configured()) redirect("/admin/login?error=Configure+Supabase+first");
-  const client = await db();
-  const { error } = await client.auth.signInWithPassword({
-    email: String(form.get("email")),
-    password: String(form.get("password")),
-  });
-  if (error) redirect("/admin/login?error=Sign+in+failed");
+  let failure: {stage: AuthStage; reference: string} | undefined;
+  let client: Awaited<ReturnType<typeof db>> | undefined;
   try {
-    await requireAdmin();
-  } catch {
-    await client.auth.signOut();
-    redirect("/admin/login?error=Administrator+access+required");
+    if (!configured()) throw new AdminAccessError('configuration');
+    client = await db(true);
+    const {error} = await client.auth.signInWithPassword({
+      email: String(form.get('email') || '').trim(),
+      password: String(form.get('password') || ''),
+    });
+    if (error) {
+      const stage = authenticationStage(error.code);
+      failure = {stage, reference: diagnostic(stage, error)};
+    } else {
+      // Reuse the authenticated client; do not reconstruct the session from cookies here.
+      await requireAdmin(client);
+    }
+  } catch (error) {
+    const stage = error instanceof AdminAccessError ? error.stage : 'unavailable';
+    failure = {stage, reference: diagnostic(stage, error)};
+  }
+  if (failure) {
+    if (client) { try { await client.auth.signOut({scope:'local'}); } catch { /* Preserve original diagnostic. */ } }
+    redirect(`/admin/login?error=${failure.stage}&reference=${failure.reference}`);
   }
   redirect("/admin/dashboard");
 }

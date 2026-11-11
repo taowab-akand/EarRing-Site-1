@@ -2,12 +2,13 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { AdminAccessError } from './auth-errors';
 export const configured = () =>
   !!(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
-export async function db() {
+export async function db(strictCookies = false) {
   const jar = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,6 +22,7 @@ export async function db() {
               jar.set(name, value, options),
             );
           } catch {
+            if (strictCookies) throw new AdminAccessError('session');
             /* Server component cannot write cookies. */
           }
         },
@@ -35,18 +37,19 @@ export function service() {
     { auth: { persistSession: false } },
   );
 }
-export async function requireAdmin() {
+export async function requireAdmin(existing?: Awaited<ReturnType<typeof db>>) {
   if (!configured()) throw new Error("Configure Supabase first.");
-  const client = await db();
+  const client = existing ?? await db();
   const {
-    data: { user },
+    data: { user }, error: sessionError,
   } = await client.auth.getUser();
-  if (!user) throw new Error("Sign in required.");
-  const { data } = await client
+  if (sessionError || !user) throw new AdminAccessError('session');
+  const { data, error } = await client
     .from("admins")
     .select("user_id")
     .eq("user_id", user.id)
-    .single();
-  if (!data) throw new Error("Administrator access required.");
+    .maybeSingle();
+  if (error) throw new AdminAccessError('database');
+  if (!data) throw new AdminAccessError('permission');
   return client;
 }
