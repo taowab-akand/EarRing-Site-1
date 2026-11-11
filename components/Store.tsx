@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Category, Product, Settings, price, money } from "@/lib/types";
 import Modal from "./Modal";
+import {cartFeedback} from '@/lib/cart-feedback';
 type Cart = Record<string, number>;
 export default function Store({
   products,
@@ -41,6 +42,7 @@ export default function Store({
     [error, E] = useState(""),
     [reference, Ref] = useState("");
   const key = useRef("");
+  const cartIcon = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     try {
       const c = JSON.parse(localStorage.getItem("earring-cart") || "{}");
@@ -77,8 +79,11 @@ export default function Store({
     Photo(0);
     M("product");
   };
-  const add = (p: Product, n: number) =>
-    C((c) => ({ ...c, [p.id]: Math.min(p.stock, (c[p.id] || 0) + n) }));
+  const add = (p: Product, n: number, source: HTMLButtonElement) => {
+    const available = p.stock > (cart[p.id] || 0);
+    if (available) C((c) => ({ ...c, [p.id]: Math.min(p.stock, (c[p.id] || 0) + n) }));
+    cartFeedback(source, cartIcon.current, p.images[0], available);
+  };
   const items = products.filter((p) => cart[p.id]);
   const subtotal = items.reduce((n, p) => n + price(p) * cart[p.id], 0);
   const delivery = Number(s[area] || 0);
@@ -128,6 +133,7 @@ export default function Store({
             {p.sale_price !== null ? "SALE" : "NEW"}
           </span>
         )}
+        <button className="card-add" aria-label={`Add ${p.name} to cart`} disabled={!p.stock || (cart[p.id] || 0) >= p.stock} onClick={e => add(p, 1, e.currentTarget)}>+ Add</button>
       </div>
       <button className="product-name" onClick={() => open(p)}>
         {p.name}
@@ -198,7 +204,7 @@ export default function Store({
           <button aria-label="Wishlist" onClick={() => M("wishlist")}>
             <Heart size={20} />
           </button>
-          <button aria-label="Shopping bag" onClick={() => M("cart")}>
+          <button ref={cartIcon} aria-label="Shopping bag" onClick={() => M("cart")}>
             <ShoppingBag size={20} />
             <sup>{Object.values(cart).reduce((a, b) => a + b, 0)}</sup>
           </button>
@@ -495,22 +501,10 @@ export default function Store({
                 <div className="actions">
                   <button
                     className="primary"
-                    disabled={!selected.stock}
-                    onClick={() => {
-                      add(selected, qty);
-                      M("cart");
-                    }}
+                    disabled={!selected.stock || (cart[selected.id] || 0) >= selected.stock}
+                    onClick={e => add(selected, qty, e.currentTarget)}
                   >
-                    Add to bag
-                  </button>
-                  <button
-                    disabled={!selected.stock}
-                    onClick={() => {
-                      add(selected, qty);
-                      checkout();
-                    }}
-                  >
-                    Buy now
+                    Add to cart
                   </button>
                   <button onClick={() => favorite(selected.id)}>
                     {wish.includes(selected.id)
@@ -532,9 +526,6 @@ export default function Store({
                 .map((p) => (
                   <div key={p.id}>
                     {card(p)}
-                    <button disabled={!p.stock} onClick={() => add(p, 1)}>
-                      Add to bag
-                    </button>
                   </div>
                 ))}
               {!wish.length && <p>Your favourite pieces will live here.</p>}

@@ -1,4 +1,9 @@
 @import "tailwindcss";
+.card-add { position:absolute; bottom:8px; right:8px; background:var(--ivory); padding:8px 12px; min-height:36px; font-size:12px; }
+.cart-feedback { position:fixed; inset:0; width:100vw; height:100dvh; max-width:none; max-height:none; margin:0; padding:0; border:0; background:transparent; pointer-events:none; overflow:visible; z-index:1000; }
+.cart-feedback::backdrop { background:transparent; pointer-events:none; }
+.cart-toast { position:fixed; top:110px; right:20px; max-width:calc(100vw - 40px); padding:12px 20px; border-radius:6px; background:var(--ink); color:white; box-shadow:0 4px 20px #0002; font-size:14px; }
+.cart-flying-item { position:fixed; width:64px; height:64px; object-fit:cover; border-radius:12px; background:var(--beige); display:grid; place-items:center; font-size:35px; box-shadow:0 4px 16px #0003; }
 :root {
   --ivory: #faf8f3;
   --beige: #eee8dd;
