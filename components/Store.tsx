@@ -133,7 +133,7 @@ export default function Store({
             {p.sale_price !== null ? "SALE" : "NEW"}
           </span>
         )}
-        <button className="card-add" aria-label={`Add ${p.name} to cart`} disabled={!p.stock || (cart[p.id] || 0) >= p.stock} onClick={e => add(p, 1, e.currentTarget)}>+ Add</button>
+        <button className="card-add" aria-label={`Add ${p.name} to cart`} disabled={!p.stock || (cart[p.id] || 0) >= p.stock} onClick={e => add(p, 1, e.currentTarget)}>+</button>
       </div>
       <button className="product-name" onClick={() => open(p)}>
         {p.name}
