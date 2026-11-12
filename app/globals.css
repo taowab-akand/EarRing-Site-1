@@ -1,5 +1,5 @@
 @import "tailwindcss";
-.card-add { position:absolute; bottom:8px; right:8px; background:var(--ivory); padding:8px 12px; min-height:36px; font-size:12px; }
+.card-add { position:absolute; bottom:9px; right:9px; font-size:20px; line-height:1; }
 .cart-feedback { position:fixed; inset:0; width:100vw; height:100dvh; max-width:none; max-height:none; margin:0; padding:0; border:0; background:transparent; pointer-events:none; overflow:visible; z-index:1000; }
 .cart-feedback::backdrop { background:transparent; pointer-events:none; }
 .cart-toast { position:fixed; bottom:calc(1in + env(safe-area-inset-bottom, 0px)); left:50%; transform:translateX(-50%); width:max-content; max-width:calc(100vw - 40px); padding:12px 20px; border-radius:6px; background:var(--ink); color:white; box-shadow:0 4px 20px #0002; font-size:14px; text-align:center; }
@@ -277,14 +277,19 @@ section {
   font: 72px Georgia;
   color: var(--gold);
 }
+.heart,
+.card-add {
+  width: 33px;
+  height: 33px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  padding: 8px;
+}
 .heart {
   position: absolute;
   right: 9px;
   top: 9px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--ivory);
-  padding: 8px;
 }
 .badge {
   position: absolute;
@@ -394,10 +399,18 @@ section {
   font-size: 11px;
   margin: 3px 0;
 }
-.compact .heart {
+.compact .heart,
+.compact .card-add {
+  width: 25px;
+  height: 25px;
   padding: 4px;
   right: 5px;
+}
+.compact .heart {
   top: 5px;
+}
+.compact .card-add {
+  bottom: 5px;
 }
 .compact .badge {
   left: 5px;
