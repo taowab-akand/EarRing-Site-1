@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Category, Product, Settings, price, money } from "@/lib/types";
 import Modal from "./Modal";
+import SectionNav from "./SectionNav";
 import {cartFeedback} from '@/lib/cart-feedback';
 type Cart = Record<string, number>;
 export default function Store({
@@ -185,12 +186,7 @@ export default function Store({
           {s.store_name}
           <span>EVERYDAY BEAUTIFUL</span>
         </a>
-        <nav>
-          <a href="#home">Home</a>
-          <a href="#earrings">All Earrings</a>
-          <a href="#collections">Collections</a>
-          <a href="#contact">Contact</a>
-        </nav>
+        <SectionNav />
         <div className="nav-icons">
           <button
             aria-label="Search earrings"

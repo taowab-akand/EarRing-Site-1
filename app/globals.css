@@ -145,6 +145,23 @@ nav {
   gap: 32px;
   font-size: 12px;
 }
+.section-nav a {
+  position: relative;
+  transition: color .2s ease;
+}
+.section-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 1px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transition: transform .2s ease;
+}
+.section-nav a[aria-current="location"] { color: var(--gold); }
+.section-nav a[aria-current="location"]::after { transform: scaleX(1); }
 .nav-icons {
   display: flex;
   gap: 8px;
